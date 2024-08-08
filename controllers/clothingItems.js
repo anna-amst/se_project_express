@@ -4,7 +4,7 @@ const { BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR } = require("../utils/erro
 const createItem = (req, res) => {
   const { name, weather, imageUrl} = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.send({ data: item });
     })
@@ -48,7 +48,7 @@ const updateItem = (req, res) => {
       return res.status(BAD_REQUEST).send({ message: "Invalid data provided" });
     }
 
-    if (err.statusCode === NOT_FOUND) {
+    if (err.name === "DocumentNotFoundError") {
       return res.status(NOT_FOUND).send({ message: err.message });
     }
 
@@ -66,19 +66,24 @@ const deleteItem = (req, res) => {
     error.statusCode = NOT_FOUND;
     throw error;
   })
-  .then((item) => res.status(204).send({}))
+  .then((item) => res.status(200).send({}))
   .catch((err) => {
     console.error(`Error ${err.name} with message ${err.message}`);
 
-    if (err.statusCode === NOT_FOUND) {
+    if (err.name === "DocumentNotFoundError") {
       return res.status(NOT_FOUND).send({ message: err.message });
     }
+    if (err.name === "CastError") {
+      return res.status(BAD_REQUEST).send({message: "Invalid data"})
+    }
 
-    res.status(INTERNAL_SERVER_ERROR).send({ message: "An error has occurred on the server" });
+    return res.status(INTERNAL_SERVER_ERROR).send({ message: "An error has occurred on the server" });
   });
 };
 
 const likeItem = (req, res) => {
+  console.log('User ID:', req.user._id);
+
   ClothingItem.findByIdAndUpdate(
   req.params.itemId,
   { $addToSet: { likes: req.user._id } },
@@ -95,11 +100,14 @@ const likeItem = (req, res) => {
 .catch((err) => {
   console.error(`Error ${err.name} with message ${err.message}`);
 
-  if (err.statusCode === NOT_FOUND) {
+  if (err.name === "DocumentNotFoundError") {
     return res.status(NOT_FOUND).send({ message: err.message });
   }
+  if (err.name === "CastError") {
+    return res.status(BAD_REQUEST).send({message: "Invalid data"})
+  }
 
-  res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+  return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
 });
 }
 
@@ -115,16 +123,19 @@ const dislikeItem = (req, res) => {
   throw error;
 })
 .then((item) => {
-  res.send({ data: item });
+  res.status(200).send({ data: item });
 })
 .catch((err) => {
   console.error(`Error ${err.name} with message ${err.message}`);
 
-  if (err.statusCode === NOT_FOUND) {
+  if (err.name === "DocumentNotFoundError") {
     return res.status(NOT_FOUND).send({ message: err.message });
   }
+  if (err.name === "CastError") {
+    return res.status(BAD_REQUEST).send({message: "Invalid data"})
+  }
 
-  res.status(INTERNAL_SERVER_ERROR).send({ message: "An error has occurred on the server" });
+  return res.status(INTERNAL_SERVER_ERROR).send({ message: "An error has occurred on the server" });
 });
 
 }
