@@ -6,7 +6,7 @@ const createItem = (req, res) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      res.send({ data: item });
+      res.send({data: item});
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
@@ -58,13 +58,9 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  
+
   ClothingItem.findByIdAndDelete(itemId)
-  .orFail(() => {
-    const error = new Error("Item not found");
-    error.statusCode = NOT_FOUND;
-    throw error;
-  })
+  .orFail()
   .then(() => res.status(200).send({}))
   .catch((err) => {
     console.error(`Error ${err.name} with message ${err.message}`);
@@ -87,13 +83,9 @@ const likeItem = (req, res) => {
   { $addToSet: { likes: req.user._id } },
   { new: true }
 )
-.orFail(() => {
-  const error = new Error("Item not found");
-  error.statusCode = NOT_FOUND;
-  throw error;
-})
+.orFail()
 .then((item) => {
-  res.res.status(200).send({ data: item });
+  res.status(200).send({ data: item });
 })
 .catch((err) => {
   console.error(`Error ${err.name} with message ${err.message}`);
@@ -115,11 +107,7 @@ const dislikeItem = (req, res) => {
   { $pull: { likes: req.user._id } },
   { new: true }
 )
-.orFail(() => {
-  const error = new Error("Item not found");
-  error.statusCode = NOT_FOUND;
-  throw error;
-})
+.orFail()
 .then((item) => {
   res.status(200).send({ data: item });
 })
