@@ -23,7 +23,7 @@ const createItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.send(items))
+    .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
       return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -58,8 +58,7 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  console.log(itemId);
-
+  
   ClothingItem.findByIdAndDelete(itemId)
   .orFail(() => {
     const error = new Error("Item not found");
@@ -82,7 +81,6 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
-  console.log('User ID:', req.user._id);
 
   ClothingItem.findByIdAndUpdate(
   req.params.itemId,
