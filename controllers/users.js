@@ -28,7 +28,7 @@ const createUser = (req, res) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({ name, avatar, email, password: hash }))
-    .then((user) => res.status(201).send(user))
+    .then(() => res.status(201).send({ name, avatar, email }))
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
@@ -69,16 +69,36 @@ const getUser = (req, res) => {
 const loginUser = (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required" });
+  }
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
 
-      return res.send({ token });
+      res.send({ token });
     })
     .catch((err) => {
-      res.status(UNAUTHORIZED).send({ message: err.message });
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Incorrect email or password" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "Document not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -95,7 +115,7 @@ const getCurrentUser = (req, res) => {
     .catch(() => {
       res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ mesage: "An error has occurred on the server" });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
