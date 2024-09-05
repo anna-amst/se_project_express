@@ -46,25 +46,6 @@ const createUser = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.send(user))
-    .catch((err) => {
-      console.log(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "Document not found" });
-      }
-      if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
 
 const loginUser = (req, res) => {
   const { email, password } = req.body;
@@ -106,14 +87,16 @@ const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
   User.findById(userId)
+    .orFail()
     .then((user) => {
-      if (!user) {
+      res.send(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.send(user);
-    })
-    .catch(() => {
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
@@ -147,7 +130,6 @@ const updateUser = (req, res) => {
 module.exports = {
   getUsers,
   createUser,
-  getUser,
   loginUser,
   getCurrentUser,
   updateUser,
