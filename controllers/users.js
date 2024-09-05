@@ -90,9 +90,9 @@ const getCurrentUser = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      res.send(user);
+      return res.send(user);
     })
-    .catch((err) => {
+    .catch(() => {
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ mesage: "An error has occurred on the server" });
@@ -112,13 +112,13 @@ const updateUser = (req, res) => {
       if (!updatedUser) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      res.send(updatedUser);
+      return res.send(updatedUser);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ mesage: "An error has occurred on the server" });
     });
