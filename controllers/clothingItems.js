@@ -42,25 +42,19 @@ const deleteItem = (req, res) => {
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-      if (item.owner.toString() !== userId) {
+      const ownerId = item.owner.toString();
+
+      if (userId !== ownerId) {
         return res
           .status(FORBIDDEN)
           .send({ message: "You do not have permission to delete this item" });
       }
+
       return ClothingItem.findByIdAndDelete(itemId)
-        .then(() =>
-          res.send({
-            message: "Item successfully deleted",
-          })
-        )
+        .then(() => res.send({ message: "Item successfully deleted" }))
         .catch((err) => {
           console.error(`Error ${err.name} with message ${err.message}`);
 
-          if (err.name === "DocumentNotFoundError") {
-            return res
-              .status(NOT_FOUND)
-              .send({ message: "Document not found" });
-          }
           if (err.name === "CastError") {
             return res.status(BAD_REQUEST).send({ message: "Invalid data" });
           }
@@ -69,6 +63,21 @@ const deleteItem = (req, res) => {
             .status(INTERNAL_SERVER_ERROR)
             .send({ message: "An error has occurred on the server" });
         });
+    })
+    .catch((err) => {
+      console.error(`Error ${err.name} with message ${err.message}`);
+
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "Document not found" });
+      }
+
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
