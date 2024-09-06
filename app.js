@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const limiter = require('./middlewares/rateLimiter');
 const mongoose = require("mongoose");
+const limiter = require('./middlewares/rateLimiter');
 const mainRouter = require("./routes/index");
 
 const app = express();
