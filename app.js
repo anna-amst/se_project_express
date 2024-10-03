@@ -1,11 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { errors } = require('celebrate');
-const {requestLogger, errorLogger} = require('./middlewares/logger');
-const limiter = require('./middlewares/rateLimiter');
+const { errors } = require("celebrate");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+require("dotenv").config();
+const limiter = require("./middlewares/rateLimiter");
 const mainRouter = require("./routes/index");
-const errorHandler = require('./middlewares/error-handler');
+const errorHandler = require("./middlewares/error-handler");
 
 const app = express();
 const { PORT = 3001 } = process.env;
