@@ -1,7 +1,4 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  INTERNAL_SERVER_ERROR,
-} = require("../utils/errors");
 
 const NotFoundError = require("../errors/NotFoundError");
 const ForbiddenError = require("../errors/ForbiddenError");
